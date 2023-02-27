@@ -9,7 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-//==============================================================================
+// Constructor
 DonkeyDistortAudioProcessor::DonkeyDistortAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
@@ -22,6 +22,8 @@ DonkeyDistortAudioProcessor::DonkeyDistortAudioProcessor()
                        )
 #endif
 {
+    zaddy_val = 1.f;
+
 }
 
 DonkeyDistortAudioProcessor::~DonkeyDistortAudioProcessor()
@@ -156,20 +158,25 @@ void DonkeyDistortAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
     {
         auto* channelData = buffer.getWritePointer(channel);
 
+        // moast donkey distorted val
+        float donkeys_val = 0.f;
+
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
         {
             if (channelData[sample] > 0)
             {
-                channelData[sample] = 1.0f - channelData[sample];
+                donkeys_val = 1.f - channelData[sample];
             }
             if (channelData[sample] < 0)
             {
-                channelData[sample] = -1.f - channelData[sample];
+                donkeys_val = -1.f - channelData[sample];
             }
             if (channelData[sample] == 0)
             {
-                channelData[sample] = 0.f;
+                donkeys_val = 0.f;
             }
+
+            channelData[sample] = juce::jmap(zaddy_val, channelData[sample], donkeys_val);
         }
     }
 
