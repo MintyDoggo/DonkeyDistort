@@ -13,6 +13,8 @@
 struct ChainSettings
 {
     float drive{ 0.f };
+    float chaos{ 0.f };
+    bool chaos_mode{ 0 };
 };
 
 //==============================================================================
@@ -66,7 +68,6 @@ public:
     juce::AudioProcessorValueTreeState& get_APVTS(){ return APVTS; }
 
     float zaddy_val;
-    bool chaos_mode;
     float random_between_samples;
     ChainSettings settings;
 

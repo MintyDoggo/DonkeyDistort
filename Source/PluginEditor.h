@@ -30,10 +30,13 @@ private:
     // access the processor object that created it.
     DonkeyDistortAudioProcessor& audioProcessor;
     juce::Slider drive_slider;
+    juce::Slider chaos_slider;
     juce::Label zaddy_label;
-    juce::TextButton *chaos_button;
+    juce::ToggleButton chaos_button;
 
-    std::unique_ptr < juce::AudioProcessorValueTreeState::SliderAttachment> drive_slider_attachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> drive_slider_attachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chaos_slider_attachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> chaos_button_attachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DonkeyDistortAudioProcessorEditor)
 };
