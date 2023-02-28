@@ -29,8 +29,11 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     DonkeyDistortAudioProcessor& audioProcessor;
-    juce::Slider slider;
+    juce::Slider drive_slider;
     juce::Label zaddy_label;
+    juce::TextButton *chaos_button;
+
+    std::unique_ptr < juce::AudioProcessorValueTreeState::SliderAttachment> drive_slider_attachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DonkeyDistortAudioProcessorEditor)
 };

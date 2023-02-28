@@ -22,6 +22,7 @@ DonkeyDistortAudioProcessor::DonkeyDistortAudioProcessor()
                        )
 #endif
 {
+    APVTS.state.addListener(this);
     zaddy_val = 1.f;
 
 }
@@ -146,20 +147,30 @@ void DonkeyDistortAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    if (should_update)
+    {
+        update_paramaters();
+    }
+
+
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
     // Make sure to reset the state if your inner loop is processing
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+    
+    // moast donkey distorted val
+    float donkeys_val = 0.f;
+    float update_sample = 0.f;
+    random_between_samples = 0.f;
+    bool chaos_mode = false;
 
     // for each channel (left right)
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer(channel);
 
-        // moast donkey distorted val
-        float donkeys_val = 0.f;
 
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
         {
@@ -175,8 +186,20 @@ void DonkeyDistortAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
             {
                 donkeys_val = 0.f;
             }
+            update_sample = juce::jmap(settings.drive, channelData[sample], donkeys_val);
 
-            channelData[sample] = juce::jmap(zaddy_val, channelData[sample], donkeys_val);
+            channelData[sample] = update_sample;
+            //random_between_samples = juce::jmap(juce::Random::getSystemRandom().nextFloat(), channelData[sample], update_sample);
+
+            //if (chaos_mode)
+            //{
+            //    channelData[sample] = settings.drive;
+            //}
+            //if (!chaos_mode)
+            //{
+            //    //channelData[sample] = random_between_samples;
+            //    channelData[sample] = settings.drive;
+            //}
         }
     }
 
@@ -203,6 +226,7 @@ bool DonkeyDistortAudioProcessor::hasEditor() const
 juce::AudioProcessorEditor* DonkeyDistortAudioProcessor::createEditor()
 {
     return new DonkeyDistortAudioProcessorEditor (*this);
+    //return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -218,6 +242,26 @@ void DonkeyDistortAudioProcessor::setStateInformation (const void* data, int siz
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 }
+
+void DonkeyDistortAudioProcessor::update_paramaters()
+{
+    settings.drive = APVTS.getRawParameterValue("Drive")->load();
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout DonkeyDistortAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Drive", "Drive", 0.f, 1.f, 0.f));
+
+
+    return layout;
+}
+
+void DonkeyDistortAudioProcessor::valueTreePropertyChanged(juce::ValueTree& treeWhosePropertyHasChanged, const juce::Identifier& property)
+{
+    should_update = true;
+}
+
 
 //==============================================================================
 // This creates new instances of the plugin..

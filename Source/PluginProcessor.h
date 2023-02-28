@@ -10,10 +10,15 @@
 
 #include <JuceHeader.h>
 
+struct ChainSettings
+{
+    float drive{ 0.f };
+};
+
 //==============================================================================
 /**
 */
-class DonkeyDistortAudioProcessor  : public juce::AudioProcessor
+class DonkeyDistortAudioProcessor  : public juce::AudioProcessor, public juce::ValueTree::Listener
                             #if JucePlugin_Enable_ARA
                              , public juce::AudioProcessorARAExtension
                             #endif
@@ -57,9 +62,23 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     // my stoff
+
+    juce::AudioProcessorValueTreeState& get_APVTS(){ return APVTS; }
+
     float zaddy_val;
+    bool chaos_mode;
+    float random_between_samples;
+    ChainSettings settings;
 
 private:
     //==============================================================================
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    juce::AudioProcessorValueTreeState APVTS{ *this, nullptr, "Parameters", createParameterLayout() };
+    void valueTreePropertyChanged(juce::ValueTree & treeWhosePropertyHasChanged, const juce::Identifier & property) override;
+    void update_paramaters();
+
+    std::atomic<bool> should_update { false };
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DonkeyDistortAudioProcessor)
+
 };
