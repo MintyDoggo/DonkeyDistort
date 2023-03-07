@@ -26,8 +26,13 @@ DonkeyDistortAudioProcessorEditor::DonkeyDistortAudioProcessorEditor (DonkeyDist
     chaos_slider.setSliderStyle(juce::Slider::LinearHorizontal);
     chaos_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 50, 20);
 
+    CHANGE_slider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    CHANGE_slider.setSliderStyle(juce::Slider::LinearHorizontal);
+    CHANGE_slider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 50, 20);
+
     drive_slider_attachment = std::make_unique < juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.get_APVTS(), "Drive", drive_slider);
     chaos_slider_attachment = std::make_unique < juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.get_APVTS(), "Chaos_Amt", chaos_slider);
+    CHANGE_slider_attachment = std::make_unique < juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.get_APVTS(), "CHANGE", CHANGE_slider);
 
     //drive_slider.setRange(0.f, 1.f);
     //drive_slider.setValue(1.f);
@@ -54,6 +59,7 @@ DonkeyDistortAudioProcessorEditor::DonkeyDistortAudioProcessorEditor (DonkeyDist
     addAndMakeVisible(zaddy_label);
     addAndMakeVisible(drive_slider);
     addAndMakeVisible(chaos_slider);
+    addAndMakeVisible(CHANGE_slider);
 
 }
 
@@ -65,11 +71,14 @@ DonkeyDistortAudioProcessorEditor::~DonkeyDistortAudioProcessorEditor()
 void DonkeyDistortAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    background = juce::ImageCache::getFromMemory(BinaryData::cute_png, BinaryData::cute_pngSize);
+    g.drawImageWithin(background, 0, 0, getWidth(), getHeight(), juce::RectanglePlacement::stretchToFit);
 
-    g.setColour (juce::Colours::white);
-    g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+    //g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+
+    //g.setColour (juce::Colours::white);
+    //g.setFont (15.0f);
+    //g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
 }
 
 void DonkeyDistortAudioProcessorEditor::resized()
@@ -78,7 +87,7 @@ void DonkeyDistortAudioProcessorEditor::resized()
     // subcomponents in your editor..
     drive_slider.setBounds(10, 10, getWidth() - 20, 20);
     chaos_slider.setBounds(10, 40, getWidth() - 20, 20);
-
+    CHANGE_slider.setBounds(10, 70, getWidth() - 20, 20);
     chaos_button.setBounds(30, 100, getWidth() - 60, 20);
 
     zaddy_label.setBounds(10, 40, getWidth() - 20, 20);

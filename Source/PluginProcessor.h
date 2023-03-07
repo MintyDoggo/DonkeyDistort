@@ -14,6 +14,7 @@ struct ChainSettings
 {
     float drive{ 0.f };
     float chaos{ 0.f };
+    float CHANGE{ 0.1f };
     bool chaos_mode{ 0 };
 };
 
@@ -77,8 +78,14 @@ private:
     juce::AudioProcessorValueTreeState APVTS{ *this, nullptr, "Parameters", createParameterLayout() };
     void valueTreePropertyChanged(juce::ValueTree & treeWhosePropertyHasChanged, const juce::Identifier & property) override;
     void update_paramaters();
+    void fill_buffer(int channel, int buffer_size, int circular_buffer_size, float* channelData);
+    void read_from_buffer(juce::AudioBuffer<float>& buffer, juce::AudioBuffer<float>& circular_buffer, int channel, int circular_buffer_size, int buffer_size);
+
 
     std::atomic<bool> should_update { false };
+    juce::AudioBuffer<float> circular_buffer;
+    int write_pos = 0;
+    int read_pos;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DonkeyDistortAudioProcessor)
 

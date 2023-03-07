@@ -4,6 +4,9 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="nQJkoX" name="DonkeyDistort">
     <GROUP id="{991971A6-D755-D979-0D28-97B06F598885}" name="Source">
+      <GROUP id="{5E0CD45A-387E-1BA7-D691-03097097AD91}" name="Assets">
+        <FILE id="DYGeon" name="cute.png" compile="0" resource="1" file="Source/Assets/cute.png"/>
+      </GROUP>
       <FILE id="zQ2EJa" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="BoeSa8" name="PluginProcessor.h" compile="0" resource="0"

@@ -31,11 +31,16 @@ private:
     DonkeyDistortAudioProcessor& audioProcessor;
     juce::Slider drive_slider;
     juce::Slider chaos_slider;
+    juce::Slider CHANGE_slider;
+
     juce::Label zaddy_label;
     juce::ToggleButton chaos_button;
 
+    juce::Image background;
+
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> drive_slider_attachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chaos_slider_attachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> CHANGE_slider_attachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> chaos_button_attachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DonkeyDistortAudioProcessorEditor)
