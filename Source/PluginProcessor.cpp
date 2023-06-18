@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "random"
 
 // Constructor
 DonkeyDistortAudioProcessor::DonkeyDistortAudioProcessor()
@@ -24,6 +25,17 @@ DonkeyDistortAudioProcessor::DonkeyDistortAudioProcessor()
 {
     APVTS.state.addListener(this);
     zaddy_val = 1.f;
+
+
+    // Resize the array to the desired dimensions
+    random_float_value_table.resize(rows);
+
+    for (int i = 0; i < rows; ++i)
+    {
+        random_float_value_table[i].resize(columns);
+    }
+
+    generateRandomArray(0.f, 1.f, settings.seed);
 
 }
 
@@ -98,14 +110,6 @@ void DonkeyDistortAudioProcessor::prepareToPlay (double sampleRate, int samplesP
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
-    
-    auto circular_buffer_size = juce::jmap<float>(settings.CHANGE, 512, 44100);
-    circular_buffer.setSize(getTotalNumOutputChannels(), (int)juce::jmap<float>(settings.CHANGE, 512, 44100));
-    //auto circular_buffer_size = sampleRate * settings.CHANGE;
-    //circular_buffer.setSize(getTotalNumOutputChannels(), (int)(sampleRate * settings.CHANGE));
-
-    read_pos = write_pos - samplesPerBlock;
-
 }
 
 void DonkeyDistortAudioProcessor::releaseResources()
@@ -157,26 +161,20 @@ void DonkeyDistortAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         update_paramaters();
     }
 
-
-
-
-
     // moast donkey distorted val
     float donkeys_val = 0.f;
     float update_sample = 0.f;
+    max_sample = 0.f;
+
     float chaos_max = 0.f;
     random_between_samples = 0.f;
-    float max_sample = 0.f;
     int buffer_size = buffer.getNumSamples();
-    char even_buffer = 0;
-    int circular_buffer_size = circular_buffer.getNumSamples();
-
-    circular_buffer.setSize(getTotalNumOutputChannels(), (int)juce::jmap<float>(settings.CHANGE, 512, 44100));
 
     // for each channel (left right)
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer(channel);
+
         for (int sample = 0; sample < buffer_size; ++sample)
         {
             // obtain donkeys val
@@ -196,149 +194,33 @@ void DonkeyDistortAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
             // create the new sample position (update_sample)
             update_sample = juce::jmap(settings.drive, channelData[sample], donkeys_val);
 
+            if (update_sample == 0.f)
+            {
+                update_sample = 0.f;
+            }
+            else if (std::abs(update_sample) < 1.0f)
+            {
+                update_sample *= (1.f - ((-0.8 * (std::pow(1 - settings.drive, 2)) + .8)));
+            }
+            
             // create the max value for the randomizer (this is represented by chaos slider)
             chaos_max = juce::jmap(settings.chaos, update_sample, channelData[sample]);
+
+            if (settings.chaos_pause)
+            {
+                update_sample = juce::jmap(chooseRandomFloat(channelData[sample], settings.wavetable), channelData[sample], update_sample);
+                chaos_max = juce::jmap(settings.chaos, update_sample, channelData[sample]);
+            }
 
             //chooses random value between old sample pos and new sample pos (update_sample)
             random_between_samples = juce::jmap(juce::Random::getSystemRandom().nextFloat(), update_sample, chaos_max);
 
             // set buffer
             channelData[sample] = random_between_samples;
-
-            //if (!settings.chaos_mode)
-            //{
-            //    channelData[sample] = update_sample;
-            //}
-            //if (settings.chaos_mode)
-            //{
-            //    channelData[sample] = random_between_samples;
-            //}
         }
-
-        //fill_buffer(channel, buffer_size, circular_buffer_size, channelData);
-        //read_from_buffer(buffer, circular_buffer, channel, circular_buffer_size, buffer_size);
     }
-
-    write_pos += buffer_size;
-    write_pos %= circular_buffer_size;
 }
 
-//void DonkeyDistortAudioProcessor::fill_buffer(int channel, int buffer_size, int circular_buffer_size, float* channelData);
-//{
-//    // if space, just copy
-//    if (circular_buffer_size > buffer_size + write_pos)
-//    {
-//        circular_buffer.copyFrom(channel, write_pos, channelData, buffer_size);
-//    }
-//    else
-//    {
-//        // available space at end
-//        auto num_samples_to_end = circular_buffer_size - write_pos;
-//        circular_buffer.copyFrom(channel, write_pos, channelData, num_samples_to_end);
-//
-//        // available space at start
-//        auto num_samples_at_start = buffer_size - num_samples_to_end;
-//        circular_buffer.copyFrom(channel, 0, channelData, num_samples_at_start);
-//    }
-//}
-
-void DonkeyDistortAudioProcessor::read_from_buffer(juce::AudioBuffer<float>& buffer, juce::AudioBuffer<float>& circular_buffer, int channel, int circular_buffer_size, int buffer_size)
-{
-    if (read_pos < 0)
-    {
-        read_pos += circular_buffer_size;
-    }
-
-    int stutter_size;
-
-    stutter_size = juce::jmap<float>(settings.CHANGE, 512, 44100);
-
-    if (read_pos + buffer_size < circular_buffer_size)
-    {
-        buffer.addFrom(channel, 0, circular_buffer.getReadPointer(channel, read_pos), stutter_size);
-    }
-    else
-    {
-        auto num_samples_to_end = circular_buffer_size - read_pos;
-        buffer.addFrom(channel, 0, circular_buffer.getReadPointer(channel, read_pos), num_samples_to_end);
-
-        auto num_samples_at_start = buffer_size - num_samples_to_end;
-        buffer.addFrom(channel, num_samples_to_end, circular_buffer.getReadPointer(channel, 0), stutter_size - num_samples_to_end);
-    }
-
-
-
-
-
-
-
-    //if (read_pos < 0)
-    //{
-    //    read_pos += circular_buffer_size;
-    //}
-
-    //if (read_pos + buffer_size < circular_buffer_size)
-    //{
-    //    buffer.addFrom(channel, 0, circular_buffer.getReadPointer(channel, read_pos), buffer_size);
-    //}
-    //else
-    //{
-    //    auto num_samples_to_end = circular_buffer_size - read_pos;
-    //    buffer.addFrom(channel, 0, circular_buffer.getReadPointer(channel, read_pos), num_samples_to_end);
-
-    //    auto num_samples_at_start = buffer_size - num_samples_to_end;
-    //    buffer.addFrom(channel, num_samples_to_end, circular_buffer.getReadPointer(channel, 0), num_samples_at_start);
-    //}
-}
-
-
-
-//// get magnitude of both channels in 1 variable
-//float channel_max = buffer.getMagnitude(channel, channelData[0], buffer_size);
-//if (channel_max > max_sample)
-//{
-//    max_sample = channel_max;
-//}
-
-
-//for (int sample = 0; sample < buffer_size; ++sample)
-//{
-//    // obtain donkeys val
-//    if (channelData[sample] > 0)
-//    {
-//        donkeys_val = 1.f - channelData[sample];
-//    }
-//    if (channelData[sample] < 0)
-//    {
-//        donkeys_val = -1.f - channelData[sample];
-//    }
-//    if (channelData[sample] == 0)
-//    {
-//        donkeys_val = 0.f;
-//    }
-
-//    // create the new sample position (update_sample)
-//    update_sample = juce::jmap(settings.drive, channelData[sample], donkeys_val);
-
-//    // create the max value for the randomizer (this is represented by chaos slider)
-//    chaos_max = juce::jmap(settings.chaos, update_sample, channelData[sample]);
-
-//    //chooses random value between old sample pos and new sample pos (update_sample)
-//    random_between_samples = juce::jmap(juce::Random::getSystemRandom().nextFloat(), update_sample, chaos_max);
-//    
-//    // set buffer
-//    channelData[sample] = random_between_samples;
-
-//    //if (!settings.chaos_mode)
-//    //{
-//    //    channelData[sample] = update_sample;
-//    //}
-//    //if (settings.chaos_mode)
-//    //{
-//    //    channelData[sample] = random_between_samples;
-//    //}
-
-//}
 //==============================================================================
 bool DonkeyDistortAudioProcessor::hasEditor() const
 {
@@ -348,12 +230,14 @@ bool DonkeyDistortAudioProcessor::hasEditor() const
 juce::AudioProcessorEditor* DonkeyDistortAudioProcessor::createEditor()
 {
     return new DonkeyDistortAudioProcessorEditor (*this);
-    //return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
 void DonkeyDistortAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
+    std::unique_ptr<juce::XmlElement> xml(APVTS.copyState().createXml());
+    copyXmlToBinary(*xml, destData);
+
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
@@ -361,17 +245,26 @@ void DonkeyDistortAudioProcessor::getStateInformation (juce::MemoryBlock& destDa
 
 void DonkeyDistortAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
+    std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
+    if (xmlState != nullptr)
+        if (xmlState->hasTagName(APVTS.state.getType()))
+            APVTS.replaceState(juce::ValueTree::fromXml(*xmlState));
+
+    update_paramaters();
+
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 }
 
 void DonkeyDistortAudioProcessor::update_paramaters()
 {
-    settings.drive = APVTS.getRawParameterValue("Drive")->load();
-    settings.chaos = APVTS.getRawParameterValue("Chaos_Amt")->load();
-    settings.CHANGE = APVTS.getRawParameterValue("CHANGE")->load();
-    settings.chaos_mode = APVTS.getRawParameterValue("Chaos")->load();
+    settings.drive = *APVTS.getRawParameterValue("Drive");
+    settings.chaos = *APVTS.getRawParameterValue("Chaos_Amt");
+    settings.seed = *APVTS.getRawParameterValue("Seed");
+    settings.wavetable = *APVTS.getRawParameterValue("Wavetable");
+    settings.bitrate = *APVTS.getRawParameterValue("Bitrate");
 
+    settings.chaos_pause = *APVTS.getRawParameterValue("Chaos_Pause");
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout DonkeyDistortAudioProcessor::createParameterLayout()
@@ -379,8 +272,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout DonkeyDistortAudioProcessor:
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
     layout.add(std::make_unique<juce::AudioParameterFloat>("Drive", "Drive", 0.f, 1.f, 0.f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("Chaos_Amt", "Chaos_Amt", 0.f, 1.f, 0.f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("CHANGE", "CHANGE", 0.1f, 1.f, 0.1f));
-    layout.add(std::make_unique<juce::AudioParameterBool>("Chaos", "Chaos", false));
+    layout.add(std::make_unique<juce::AudioParameterInt>("Seed", "Seed", 0, 1000, 0.f));
+    layout.add(std::make_unique<juce::AudioParameterInt>("Wavetable", "Wavetable", 0, columns - 1, 0));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Bitrate", "Bitrate", 1.f, 100.f, 0.f));
+
+    layout.add(std::make_unique<juce::AudioParameterBool>("Chaos_Pause", "Chaos_Pause", false));
 
     return layout;
 }
@@ -390,10 +286,43 @@ void DonkeyDistortAudioProcessor::valueTreePropertyChanged(juce::ValueTree& tree
     should_update = true;
 }
 
-
 //==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new DonkeyDistortAudioProcessor();
+}
+
+void DonkeyDistortAudioProcessor::generateRandomArray(float minValue, float maxValue, int seed)
+{
+    std::mt19937 rng(seed);
+    std::uniform_real_distribution<> dis(minValue, maxValue);
+
+    for (int j = 0; j < columns; ++j)
+    {
+        random_float_value_table[0][j] = dis(rng);
+        random_float_value_table[rows - 1][j] = dis(rng);
+    }
+
+    // Smooth interpolation between the first and last row
+    for (int i = 1; i < rows - 1; ++i)
+    {
+        for (int j = 0; j < columns; ++j)
+        {
+            float t = static_cast<float>(i) / (rows - 1);
+            random_float_value_table[i][j] = (1.0f - t) * random_float_value_table[0][j] + t * random_float_value_table[rows - 1][j];
+        }
+    }
+}
+
+float DonkeyDistortAudioProcessor::chooseRandomFloat(float original_sample, int wavetable_pos)
+{
+    original_sample = std::abs(original_sample);
+    original_sample = std::round(original_sample * settings.bitrate) / settings.bitrate;
+    int random_index = int(multiplier * original_sample + increment) % columns;
+
+    if (wavetable_pos < columns)
+        return random_float_value_table[wavetable_pos][random_index];
+    else
+        return 0.f;
 }

@@ -14,14 +14,17 @@ struct ChainSettings
 {
     float drive{ 0.f };
     float chaos{ 0.f };
-    float CHANGE{ 0.1f };
-    bool chaos_mode{ 0 };
+    int seed{ 0 };
+    int wavetable{ 0 };
+    float bitrate{ 0.f };
+
+    bool chaos_pause{ 0 };
 };
 
 //==============================================================================
 /**
 */
-class DonkeyDistortAudioProcessor  : public juce::AudioProcessor, public juce::ValueTree::Listener
+class DonkeyDistortAudioProcessor : public juce::AudioProcessor, public juce::ValueTree::Listener
                             #if JucePlugin_Enable_ARA
                              , public juce::AudioProcessorARAExtension
                             #endif
@@ -63,13 +66,21 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-
-    // my stoff
+    void generateRandomArray(float minValue, float maxValue, int seed);
 
     juce::AudioProcessorValueTreeState& get_APVTS(){ return APVTS; }
+    const int rows = 1024;
+    const int columns = 1024;
 
     float zaddy_val;
     float random_between_samples;
+    float max_sample;
+
+    juce::Array<float> random_float_values;
+
+    // Create a 2D array
+    std::vector<std::vector<float>> random_float_value_table;
+
     ChainSettings settings;
 
 private:
@@ -78,15 +89,12 @@ private:
     juce::AudioProcessorValueTreeState APVTS{ *this, nullptr, "Parameters", createParameterLayout() };
     void valueTreePropertyChanged(juce::ValueTree & treeWhosePropertyHasChanged, const juce::Identifier & property) override;
     void update_paramaters();
-    void fill_buffer(int channel, int buffer_size, int circular_buffer_size, float* channelData);
-    void read_from_buffer(juce::AudioBuffer<float>& buffer, juce::AudioBuffer<float>& circular_buffer, int channel, int circular_buffer_size, int buffer_size);
+    float chooseRandomFloat(float original_sample, int wavetable_pos);
+    const float multiplier = 11.f;  // Multiplier constant
+    const int increment = 12345;        // Increment constant
 
 
     std::atomic<bool> should_update { false };
-    juce::AudioBuffer<float> circular_buffer;
-    int write_pos = 0;
-    int read_pos;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DonkeyDistortAudioProcessor)
-
 };

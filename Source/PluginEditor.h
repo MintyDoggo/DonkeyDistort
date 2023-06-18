@@ -10,11 +10,12 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "StyleSheet.h"
 
 //==============================================================================
 /**
 */
-class DonkeyDistortAudioProcessorEditor  : public juce::AudioProcessorEditor
+class DonkeyDistortAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Slider::Listener, public juce::ToggleButton::Listener
 {
 public:
     DonkeyDistortAudioProcessorEditor (DonkeyDistortAudioProcessor&);
@@ -22,26 +23,37 @@ public:
 
     //==============================================================================
     void paint (juce::Graphics&) override;
+
     void resized() override;
-    void sliderValueChanged(juce::Slider* slider);
+    void sliderValueChanged(juce::Slider* slider) override;
+    void buttonClicked(juce::Button* button) override;
 
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
+    juce::CustomLNF myCustomLNF;
     DonkeyDistortAudioProcessor& audioProcessor;
+
     juce::Slider drive_slider;
     juce::Slider chaos_slider;
-    juce::Slider CHANGE_slider;
+    juce::Slider seed_slider;
+    juce::Slider wavetable_slider;
+    juce::Slider bitrate_slider;
 
-    juce::Label zaddy_label;
-    juce::ToggleButton chaos_button;
+    juce::ToggleButton chaos_pause;
+
+    juce::Label debug_label;
+    juce::ToggleButton debug_button;
+    juce::ToggleButton debug_button2;
 
     juce::Image background;
-
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> drive_slider_attachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chaos_slider_attachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> CHANGE_slider_attachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> chaos_button_attachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> seed_slider_attachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> wavetable_slider_attachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> bitrate_slider_attachment;
+
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> chaos_pause_attachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DonkeyDistortAudioProcessorEditor)
 };

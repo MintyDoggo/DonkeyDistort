@@ -5,6 +5,7 @@
   <MAINGROUP id="nQJkoX" name="DonkeyDistort">
     <GROUP id="{991971A6-D755-D979-0D28-97B06F598885}" name="Source">
       <GROUP id="{5E0CD45A-387E-1BA7-D691-03097097AD91}" name="Assets">
+        <FILE id="cr8MrM" name="cute_png.png" compile="0" resource="1" file="Source/Assets/cute_png.png"/>
         <FILE id="DYGeon" name="cute.png" compile="0" resource="1" file="Source/Assets/cute.png"/>
       </GROUP>
       <FILE id="zQ2EJa" name="PluginProcessor.cpp" compile="1" resource="0"
@@ -14,6 +15,8 @@
       <FILE id="F9myiI" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="Vb1MjR" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="bRzCko" name="StyleSheet.cpp" compile="1" resource="0" file="Source/StyleSheet.cpp"/>
+      <FILE id="ssOXbU" name="StyleSheet.h" compile="0" resource="0" file="Source/StyleSheet.h"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
