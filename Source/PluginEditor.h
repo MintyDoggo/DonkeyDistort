@@ -46,7 +46,11 @@ private:
     juce::ToggleButton debug_button;
     juce::ToggleButton debug_button2;
 
+    juce::ImageButton social_link_button;
     juce::Image background;
+    juce::Image myntian_button_image;
+
+
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> drive_slider_attachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chaos_slider_attachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> seed_slider_attachment;
