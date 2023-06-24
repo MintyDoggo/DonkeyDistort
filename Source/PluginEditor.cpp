@@ -57,17 +57,25 @@ DonkeyDistortAudioProcessorEditor::DonkeyDistortAudioProcessorEditor (DonkeyDist
 
     chaos_pause_attachment = std::make_unique < juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.get_APVTS(), "Chaos_Pause", chaos_pause);
 
-    chaos_pause.onClick = [this]() {
-        //debug_label.setText(juce::String(audioProcessor.testfloat), juce::dontSendNotification);
+    //chaos_pause.onClick = [this]() 
+    //{
+    //    //debug_label.setText(juce::String(audioProcessor.testfloat), juce::dontSendNotification);
+    //};
+
+    social_link_button.onClick = [this]() 
+    {
+        juce::URL myntianURL("https://www.patreon.com/Myntian");
+        myntianURL.launchInDefaultBrowser();
     };
 
     addAndMakeVisible(drive_slider);
     addAndMakeVisible(chaos_slider);
-    addAndMakeVisible(seed_slider);
-    addAndMakeVisible(wavetable_slider);
-    addAndMakeVisible(bitrate_slider);
+    addAndMakeVisible(social_link_button);
+    //addAndMakeVisible(seed_slider);
+    //addAndMakeVisible(wavetable_slider);
+    //addAndMakeVisible(bitrate_slider);
 
-    addAndMakeVisible(chaos_pause);
+    //addAndMakeVisible(chaos_pause);
     //addAndMakeVisible(debug_button);
     //addAndMakeVisible(debug_button2);
     //addAndMakeVisible(debug_label);
@@ -81,8 +89,11 @@ DonkeyDistortAudioProcessorEditor::~DonkeyDistortAudioProcessorEditor()
 //==============================================================================
 void DonkeyDistortAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    background = juce::ImageCache::getFromMemory(BinaryData::cute_png_png, BinaryData::cute_png_pngSize);
+    background = juce::ImageCache::getFromMemory(BinaryData::new_background_png, BinaryData::new_background_pngSize);
+    myntian_button_image = juce::ImageCache::getFromMemory(BinaryData::MyntianJuceButton_png, BinaryData::MyntianJuceButton_pngSize);
+
     g.drawImageWithin(background, 0, 0, getWidth(), getHeight(), juce::RectanglePlacement::stretchToFit);
+    social_link_button.setImages(true, false, false, myntian_button_image, 1.f, juce::Colour(), myntian_button_image, 1.f, juce::Colour(0xFF5588EE), myntian_button_image, 1.f, juce::Colour(0xff88BBff));
 }
 
 void DonkeyDistortAudioProcessorEditor::resized()
@@ -91,14 +102,21 @@ void DonkeyDistortAudioProcessorEditor::resized()
     // subcomponents in your editor..
     drive_slider.setBounds(10, 20, getWidth() - 20, 20);
     chaos_slider.setBounds(10, 55, getWidth() - 20, 20);
-    seed_slider.setBounds(10, 125, (getWidth() - 20) / 2, 20);
-    wavetable_slider.setBounds(10, 90, getWidth() - 20, 20);
-    bitrate_slider.setBounds(100, 125, (getWidth() - 20) / 2, 20);
+    social_link_button.setBounds(17, 178, 120, 30);
+    //social_link_button.setColour(social_link_button.buttonColourId, juce::Colours::transparentWhite);
+    //social_link_button.setColour(social_link_button.buttonOnColourId, juce::Colours::transparentWhite);
+    //social_link_button.setColour(social_link_button.textColourOffId, juce::Colours::transparentWhite);
+    //social_link_button.setColour(social_link_button.textColourOnId, juce::Colours::(0.0f, 0.0f, 0.0f, 0.0f));
 
-    chaos_pause.setBounds(10, 155, getWidth() - 25, 20);
-    debug_label.setBounds(10, 140, getWidth() - 25, 20);
-    debug_button.setBounds(80, 160, getWidth() - 25, 20);
-    debug_button2.setBounds(80, 180, getWidth() - 25, 20);
+
+    //seed_slider.setBounds(10, 125, (getWidth() - 20) / 2, 20);
+    //wavetable_slider.setBounds(10, 90, getWidth() - 20, 20);
+    //bitrate_slider.setBounds(100, 125, (getWidth() - 20) / 2, 20);
+
+    //chaos_pause.setBounds(10, 155, getWidth() - 25, 20);
+    //debug_label.setBounds(10, 140, getWidth() - 25, 20);
+    //debug_button.setBounds(80, 160, getWidth() - 25, 20);
+    //debug_button2.setBounds(80, 180, getWidth() - 25, 20);
 }
 
 void DonkeyDistortAudioProcessorEditor::sliderValueChanged(juce::Slider* in_slider)
@@ -139,4 +157,3 @@ void DonkeyDistortAudioProcessorEditor::buttonClicked(juce::Button* in_button)
         //debug_label.setText(juce::String(audioProcessor.random_float_value_table[audioProcessor.settings.wavetable][audioProcessor.columns - 1]), juce::dontSendNotification);
     }
 }
-
